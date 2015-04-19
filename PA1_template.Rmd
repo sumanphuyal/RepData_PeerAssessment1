@@ -9,7 +9,7 @@ output: html_document
 ##*****************************************************************##
 ## Download data from internet ##
 ##*****************************************************************##
-```{r}
+
 url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip"
 destFile <- "activityData.zip"
 fileName <- "activity.csv"
@@ -35,23 +35,23 @@ activityData <- read.csv(fileName, sep=",", header = TRUE, na.strings = "NA")
 stepsPerDay <- tapply(activityData$steps, activityData$date, sum, na.rm = TRUE)
 ```
 ## Make a histogram of the total number of steps taken each day. 
-```{r, echo=FALSE}
+```{r}
 ##*****************************************************************##
-## 2. Make a histogram of the total number of steps taken each day ##
+## Make a histogram of the total number of steps taken each day ##
 ##*****************************************************************##
 hist(stepsPerDay, xlab = "Number of Steps",
-     main = "Steps Take each day", col = "Gray")
+     main = "Steps Taken Each Day", col = "Gray")
 ```
 ## Calculate mean of the total number of setps taken per day. 
-```{r, echo = FALSE}
+```{r}
 ##*****************************************************************##
-## 3. Calculate and report the mean and median of the total number of ## 
+## Calculate and report the mean and median of the total number of ## 
 ## steps taken per day ##
 ##*****************************************************************##
 mean(stepsPerDay, na.rm = TRUE)
 ```
 ## Calculate median of the total number of steps taken per day
-```{r, echo = FALSE}
+```{r}
 median(stepsPerDay, na.rm = TRUE)
 ```
 ## Calculate average number of steps take per day
@@ -59,7 +59,7 @@ median(stepsPerDay, na.rm = TRUE)
 avgSteps <- tapply(activityData$steps, activityData$interval, mean, na.rm = TRUE)
 ```
 ## Make a time series plot of the 5 minute interval and the average number of steps taken per day.
-```{r, echo=FALSE}
+```{r}
 ##*****************************************************************##
 ## Make a time series plot (i.e. type = "l") of the 5-minute interval ##
 ## (x-axis) and the average number of steps taken, averaged across all ##
@@ -71,7 +71,7 @@ plot(unique(activityData$interval), avgSteps, typ="l",
      main = "Average Steps Across All Days")
 ```
 ## The interval (in minute) with maximum number of steps
-```{r, echo=FALSE}
+```{r}
 ##*****************************************************************##
 ## Which 5-minute interval, on average across all the days in the ##
 ## dataset, contains the maximum number of steps? ##
@@ -79,7 +79,7 @@ plot(unique(activityData$interval), avgSteps, typ="l",
 names(which.max(avgSteps))
 ```
 ## Total number of missing values in dataset (i.e the total number of rows with NAs)
-```{r, echo=FALSE}
+```{r}
 ##*****************************************************************##
 ## Calculate and report the total number of missing values in the dataset ## 
 ## (i.e. the total number of rows with NAs) ##
@@ -103,6 +103,11 @@ activityData_New <- activityData
 ```
 ## Fill missing NAs in new dataset with the average steps calculated above. 
 ```{r}
+##*****************************************************************##
+## is.na(activityData_New $steps) generates logical vector equel in length as ## 
+## activityData_New$steps, so I use this logical vector to determine which are ## 
+## NAs and fill them with corresponding average steps that was calculated and stored ## on acgSteps. ##
+##*****************************************************************##
 activityData_New$steps[is.na(activityData_New $steps)] <- avgSteps
 ```
 ```{r, echo=FALSE}
@@ -115,17 +120,17 @@ activityData_New$steps[is.na(activityData_New $steps)] <- avgSteps
 ##*****************************************************************##
 ```
 ## Make a histogram of the total number of steps taken each day
-```{r, echo=FALSE}
+```{r}
 stepsPerDay_New <- tapply(activityData_New$steps, activityData_New$date, sum)
 hist(stepsPerDay_New, xlab = "Number of Steps",
      main = "Steps Take each day", col = "Blue")
 ```
 ## Mean of total number of steps taken per day after filling NAs.
-```{r, echo=FALSE}
+```{r}
 mean(stepsPerDay_New)
 ```
 ## Medina of total number of steps taken per day after filling NAs
-```{r, echo=FALSE}
+```{r}
 median(stepsPerDay_New)
 ```
 ## Create new field that tells whether date is weekend or weekday.
@@ -149,7 +154,8 @@ for (i in 1:length(activityData_New$days))
 ```{r}
 avgSteps_WeekDays <- tapply(activityData_New$steps, activityData_New[,c('interval', 'weekDays')], mean)
 ```
-```{r, echo=FALSE}
+## Draw panel plot showind weekend and weeekdsys info. 
+```{r}
 ##*****************************************************************##
 ## Make a panel plot containing a time series plot (i.e. type = "l") ## 
 ## of the 5-minute interval (x-axis) and the average number of steps taken, 
@@ -157,19 +163,16 @@ avgSteps_WeekDays <- tapply(activityData_New$steps, activityData_New[,c('interva
 ## See the README file in the GitHub repository to see an example of what ## 
 ## this plot should look like using simulated data. ##
 ##*****************************************************************##
+
+layout(matrix(1:2, ncol = 1), widths = 1, heights = c(2,1.5), respect = FALSE)
+par(mar = c(0, 4.1, 4.1, 2.1))
+with(activityData_New, plot(unique(activityData_New$interval), avgSteps_WeekDays[,'weekend'], typ="l",ylab = "Average Steps", xaxt = 'n', 
+     main = "Average Steps Across Weekday and Weekend"))
+legend("topright",legend="Weekend")
+par(mar = c(4.1, 4.1, 0, 2.1))
+with(activityData_New, plot(unique(activityData_New$interval), avgSteps_WeekDays[,'weekday'], typ="l",
+ylab = "", xlab = "Interval (in minute)",
+     main = ""))
+legend("topright",legend="Weekday")
 ```
-## Plot weekend and weekdays data.
-### Load ggplot2 library for qplot()
-```{r}
-library(ggplot2)
-```
-### Plot weekdays data
-```{r, echo=FALSE}
-qplot(unique(activityData_New$interval), avgSteps_WeekDays[,'weekday'], data=data.frame(avgSteps_WeekDays), geom=c("line"), xlab="Interval", 
-      ylab="Number of steps", main="")
-```    
-### Plot weekend data
-```{r, echo=FALSE}
-qplot(unique(activityData_New$interval), avgSteps_WeekDays[,'weekend'], data=data.frame(avgSteps_WeekDays), geom=c("line"), xlab="Interval", 
-      ylab="Number of steps", main="") 
-```
+
